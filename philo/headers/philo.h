@@ -20,5 +20,10 @@
 # include <sys/time.h>
 # include <pthread.h>
 
+typedef	struct	s_test
+{
+	int	mails;
+	pthread_mutex_t	mutex;
+}		t_test;
 
 #endif

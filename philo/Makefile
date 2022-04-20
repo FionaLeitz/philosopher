@@ -29,7 +29,7 @@ OBJS	= ${addprefix ${OBJ_DIR}/, ${SRCS:.c=.o}}
 
 CC	= gcc
 
-CFLAGS	= -Wall -Wextra -Werror
+CFLAGS	= -Wall -Wextra -Werror -pthread
 
 all:	$(NAME)
 
@@ -43,6 +43,9 @@ ${OBJ_DIR}:
 
 $(OBJ_DIR)/%.o: %.c
 			@${CC} ${CFLAGS} -c $< -o $@
+
+test:		all
+			@./${NAME}
 
 clean:
 			@rm -rf $(OBJ_DIR)
