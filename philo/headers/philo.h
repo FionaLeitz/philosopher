@@ -19,11 +19,23 @@
 # include <unistd.h>
 # include <sys/time.h>
 # include <pthread.h>
+# include "../libft/headers/ft_printf.h"
+# include "../libft/headers/libft.h"
 
-typedef	struct	s_test
+typedef struct	s_res
 {
-	int	mails;
-	pthread_mutex_t	mutex;
-}		t_test;
+	int	count;
+}		t_res;
+
+typedef	struct	s_data
+{
+	int				philo;
+	long int		die;
+	long int		eat;
+	long int		sleep;
+	long int		must_eat;
+	pthread_t		*thread;
+	pthread_mutex_t	*mutex;
+}					t_data;
 
 #endif

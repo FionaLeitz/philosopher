@@ -31,11 +31,14 @@ CC	= gcc
 
 CFLAGS	= -Wall -Wextra -Werror -pthread
 
+LIB		= libft/libft.a
+
 all:	$(NAME)
 
 ${NAME}:	${OBJ_DIR} ${OBJS}
 			@echo "${_ORANGE}Objects philo created${_END}"
-			@${CC} ${CFLAGS} ${OBJS} -o ${NAME}
+			@make -C libft
+			@${CC} ${CFLAGS} ${OBJS} ${LIB} -o ${NAME}
 			@echo "${_GREEN}PHILO compiled succesfully !${_END}"
 
 ${OBJ_DIR}:
@@ -45,14 +48,16 @@ $(OBJ_DIR)/%.o: %.c
 			@${CC} ${CFLAGS} -c $< -o $@
 
 test:		all
-			@./${NAME}
+			./${NAME}
 
 clean:
 			@rm -rf $(OBJ_DIR)
+			@make clean -C libft
 			@echo "${_YELLOW}Objects cleaned !${_END}"
 
 fclean:		clean
 			@rm -rf ${NAME}
+			@rm -rf ${LIB}
 			@echo "${_YELLOW}${NAME} cleaned !${_END}"
 
 re:			fclean all
