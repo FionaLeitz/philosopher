@@ -21,19 +21,22 @@
 # include <pthread.h>
 # include "../libft/headers/ft_printf.h"
 # include "../libft/headers/libft.h"
-
-typedef struct	s_res
+/*
+typedef struct	s_philo
 {
-	int	count;
-}		t_res;
-
+	int		philo;
+	t_philo	*next;
+	t_philo	*prev;
+}		t_philo;
+*/
 typedef	struct	s_data
 {
-	int				philo;
+	int				nbr_philo;
 	long int		die;
 	long int		eat;
 	long int		sleep;
 	long int		must_eat;
+	int				*philo;
 	pthread_t		*thread;
 	pthread_mutex_t	*mutex;
 }					t_data;

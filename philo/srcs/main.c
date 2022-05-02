@@ -17,7 +17,7 @@ int get_arg(int argc, char **argv, t_data *data)
 		}
 		count_arg++;
 	}
-	data->philo = ft_atoi(argv[1]);
+	data->nbr_philo = ft_atoi(argv[1]);
 	data->die = ft_atol(argv[2]);
 	data->eat = ft_atol(argv[3]);
 	data->sleep = ft_atol(argv[4]);
@@ -27,16 +27,16 @@ int get_arg(int argc, char **argv, t_data *data)
 	return (1);
 }
 
-void	*routine(void *res)
+void	*routine(void *philo)
 {
-	t_res	*res2;
+	t_philo	*philo2;
 
-	res2 = res;
-	res2->count += 1;
+	philo2 = philo;
+	ft_printf("")
 	return (NULL);
 }
 
-int	make_thread(t_data *data, t_res *res)
+int	make_thread(t_data *data)
 {
 	int	n;
 
@@ -47,14 +47,14 @@ int	make_thread(t_data *data, t_res *res)
 	if (data->mutex == NULL)
 		return (1);
 	n = 0;
-	while (n < data->philo)
+	while (n < data->nbr_philo)
 	{
-		if (pthread_create(&data->thread[n], NULL, &routine, res) != 0)
+		if (pthread_create(&data->thread[n], NULL, &routine, philo) != 0)
 			return (1);
 		n++;
 	}
 	n = 0;
-	while (n < data->philo)
+	while (n < data->nbr_philo)
 	{
 		if (pthread_join(data->thread[n], NULL) != 0)
 			return (1);
@@ -66,9 +66,8 @@ int	make_thread(t_data *data, t_res *res)
 int main(int argc, char **argv)
 {
 	t_data	data;
-	t_res	res;
+	t_philo	philo;
 
-	res.count = 0;
 	if (!(argc == 5 || argc == 6))
 	{
 		ft_printf("Too few arguments\n");
@@ -82,6 +81,5 @@ int main(int argc, char **argv)
 //	ft_printf("philo = %d, die = %d, eat = %d, sleep = %d, must_eat = %d\n", data.philo, data.die, data.eat, data.sleep, data.must_eat);
 	if (make_thread(&data, &res) == 1)
 		return (1);
-	ft_printf("res.count = %d\n", res.count);
 	return (0);
 }
