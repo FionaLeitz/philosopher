@@ -21,24 +21,29 @@
 # include <pthread.h>
 # include "../libft/headers/ft_printf.h"
 # include "../libft/headers/libft.h"
-/*
+
 typedef struct	s_philo
-{
-	int		philo;
-	t_philo	*next;
-	t_philo	*prev;
-}		t_philo;
-*/
+{ 
+	int				philo;			//	numero du philo
+	long int		time_to_die;	//	temps avant de mourir
+	long int		time_to_eat;	//	temps pour manger
+	long int		time_to_sleep;	//	temps pour dormir
+	int				must_eat;		//	nombre de repas minimum
+	pthread_mutex_t	fork;			//	mutex sur sa propre fourchette
+	pthread_mutex_t	*next_fork;		//	adresse du mutex de la fourchette du suivant
+	pthread_mutex_t	*to_write;		//	adresse du mutex unique d'ecriture
+	int				*dead;			//	adresse de la variable unique si mort
+	struct s_philo	*next;			//	adresse de la structure du philo suivant
+	struct s_philo	*prev;			//	adresse de la structure du philo precedent
+}					t_philo;
+
 typedef	struct	s_data
 {
 	int				nbr_philo;
-	long int		die;
-	long int		eat;
-	long int		sleep;
-	long int		must_eat;
-	int				*philo;
-	pthread_t		*thread;
-	pthread_mutex_t	*mutex;
+	long int		time_to_die;
+	long int		time_to_eat;
+	long int		time_to_sleep;
+	int				must_eat;
 }					t_data;
 
 #endif
