@@ -207,22 +207,10 @@ int	create_struct(t_data *data, t_philo **philo)
 	return (0);
 }
 
-void	print_struct(t_philo **philo)
-{
-	back_first(philo);
-	while ((*philo)->next != NULL)
-	{
-		ft_printf("IN PRINT_STRUCT : philo numero = %d, die = %d, eat = %d, sleep = %d, must_eat = %d\n", (*philo)->philo, (*philo)->time_to_die, (*philo)->time_to_eat, (*philo)->time_to_sleep, (*philo)->must_eat);
-		*philo = (*philo)->next;
-	}
-	ft_printf("IN PRINT_STRUCT : philo numero = %d, die = %d, eat = %d, sleep = %d, must_eat = %d\n", (*philo)->philo, (*philo)->time_to_die, (*philo)->time_to_eat, (*philo)->time_to_sleep, (*philo)->must_eat);
-}
-
 int main(int argc, char **argv)
 {
 	t_data	data;
 	t_philo	*philo;
-
 
 	if (!(argc == 5 || argc == 6))
 	{
@@ -237,11 +225,10 @@ int main(int argc, char **argv)
 	pthread_mutex_init(&data.to_write, NULL);
 	if (create_struct(&data, &philo) == 1)
 		ft_printf("Error malloc\n");
-//	gettimeofday(&data.time, NULL);
 	if (make_thread(&data, &philo) == 1)
 		ft_printf("Error thread\n");
 	while (data.dead == 0)
-	{}
+		;
 	back_first(&philo);
 	while (philo->next)
 	{

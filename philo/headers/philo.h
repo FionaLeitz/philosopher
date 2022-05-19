@@ -26,16 +26,17 @@ typedef struct	s_philo
 {
 	pthread_t		thread;
 	int				philo;			//	numero du philo
-	long int		time_to_die;	//	temps avant de mourir
+	long int		time_to_die;	//	temps avant de mourir								INUTILE ICI
 	long int		time_to_eat;	//	temps pour manger
 	long int		time_to_sleep;	//	temps pour dormir
-	int				must_eat;		//	nombre de repas minimum
+	int				must_eat;		//	nombre de repas minimum								POTENTIELLEMENT UTILE
 	pthread_mutex_t	fork;			//	mutex sur sa propre fourchette
 	pthread_mutex_t	*next_fork;		//	adresse du mutex de la fourchette du suivant
 	pthread_mutex_t	*to_write;		//	adresse du mutex unique d'ecriture
 	int				*dead;			//	adresse de la variable unique de mort
-	struct timeval	*time;
-	struct timeval	time2;
+	struct timeval	*time;			//	temps de reference
+	struct timeval	time2;			//	temps auquel soustraire le temps de reference pour avoir le temps passe
+//	struct timeval	death_time		//	temps du dernier repas
 	struct s_philo	*next;			//	adresse de la structure du philo suivant
 	struct s_philo	*prev;			//	adresse de la structure du philo precedent
 }					t_philo;
