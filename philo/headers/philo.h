@@ -33,10 +33,11 @@ typedef struct	s_philo
 	pthread_mutex_t	fork;			//	mutex sur sa propre fourchette
 	pthread_mutex_t	*next_fork;		//	adresse du mutex de la fourchette du suivant
 	pthread_mutex_t	*to_write;		//	adresse du mutex unique d'ecriture
+	pthread_mutex_t	*is_dead;		//	mutex sur la variable de mort
 	int				*dead;			//	adresse de la variable unique de mort
+	pthread_mutex_t	time_mutex;		//	mutex sur la variable de temps last_eat
 	struct timeval	*time;			//	temps de reference
-	struct timeval	time2;			//	temps auquel soustraire le temps de reference pour avoir le temps passe
-//	struct timeval	death_time		//	temps du dernier repas
+	struct timeval	last_eat;		//	temps du dernier repas
 	struct s_philo	*next;			//	adresse de la structure du philo suivant
 	struct s_philo	*prev;			//	adresse de la structure du philo precedent
 }					t_philo;
@@ -48,6 +49,7 @@ typedef	struct	s_data
 	long int		time_to_eat;
 	long int		time_to_sleep;
 	int				must_eat;
+	pthread_mutex_t	is_dead;
 	int				dead;
 	struct timeval	time;
 	pthread_mutex_t	to_write;
