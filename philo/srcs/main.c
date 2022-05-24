@@ -37,18 +37,30 @@ int get_arg(int argc, char **argv, t_data *data)
 	return (0);
 }
 
-int	ft_write(t_philo *philo, char *str)
+int	ft_write(t_philo *philo, char *str, int i)
 {
 	struct timeval	time2;
 	
 	pthread_mutex_lock(philo->to_write);
+	pthread_mutex_lock(philo->is_dead);
 	if (philo->dead[0] == 0)
 	{
+		if (i == 1 || i == 2)
+			pthread_mutex_unlock(&philo->fork);
+		if (i == 2)
+			pthread_mutex_unlock(philo->next_fork);
+		if (i == 3 || i == 4)
+			pthread_mutex_unlock(philo->next_fork);
+		if (i == 4)
+			pthread_mutex_unlock(&philo->fork);
+		pthread_mutex_unlock(philo->is_dead);
 		pthread_mutex_unlock(philo->to_write);
 		return (1);
 	}
+	pthread_mutex_unlock(philo->is_dead);
 	gettimeofday(&time2, NULL);
 	printf("%ld	%d %s\n", ((time2.tv_sec - philo->time->tv_sec) * 1000) + ((time2.tv_usec - philo->time->tv_usec) / 1000), philo->philo, str);
+	pthread_mutex_unlock(philo->to_write);
 	if (ft_strnstr(str, "eating", ft_strlen(str)) != NULL)
 	{
 		if (philo->must_eat > -1)
@@ -63,39 +75,74 @@ int	ft_write(t_philo *philo, char *str)
 		gettimeofday(&philo->last_eat, NULL);
 		pthread_mutex_unlock(&philo->time_mutex);
 	}
-	pthread_mutex_unlock(philo->to_write);
 	return (0);
 }
 
-void	*routine(void *philo)
+void	*routine1(void *philo)
 {
 	t_philo		*philo2;
 
 	philo2 = philo;
-	if ((philo2->philo % 2) == 0)
-		usleep(philo2->time_to_eat * 1000);
+	if (philo2->philo % 2 == 0)
+		usleep(philo2->time_to_eat * 100);
 	while (1)
 	{
 		pthread_mutex_lock(&philo2->fork);
-		if (ft_write(philo2, "has taken a fork") == 1)
+		if (ft_write(philo2, "has taken a fork", 1) == 1)
 			return (NULL);
 		if (philo2->next_fork == NULL)
 		{
 			usleep(philo2->time_to_die * 1000);
+			pthread_mutex_unlock(&philo2->fork);
 			return (NULL);
 		}
 		pthread_mutex_lock(philo2->next_fork);
-		if (ft_write(philo2, "has taken a fork") == 1)
+		if (ft_write(philo2, "has taken a fork", 2) == 1)
 			return (NULL);
-		if (ft_write(philo2, "is eating") == 1)
+		if (ft_write(philo2, "is eating", 2) == 1)
 			return (NULL);
 		usleep(philo2->time_to_eat * 1000);
 		pthread_mutex_unlock(philo2->next_fork);
 		pthread_mutex_unlock(&philo2->fork);
-		if (ft_write(philo2, "is sleeping") == 1)
+		if (ft_write(philo2, "is sleeping", 0) == 1)
 			return (NULL);
 		usleep(philo2->time_to_sleep * 1000);
-		if (ft_write(philo2, "is thinking") == 1)
+		if (ft_write(philo2, "is thinking", 0) == 1)
+			return (NULL);
+	}
+	return (NULL);
+}
+
+void	*routine2(void *philo)
+{
+	t_philo		*philo2;
+
+	philo2 = philo;
+	if (philo2->philo % 2 == 0)
+		usleep(/*philo2->time_to_eat * */100);
+	while (1)
+	{
+		pthread_mutex_lock(philo2->next_fork);
+		if (ft_write(philo2, "has taken a fork", 3) == 1)
+			return (NULL);
+		if (philo2->next_fork == NULL)
+		{
+			usleep(philo2->time_to_die * 1000);
+			pthread_mutex_unlock(&philo2->fork);
+			return (NULL);
+		}
+		pthread_mutex_lock(&philo2->fork);
+		if (ft_write(philo2, "has taken a fork", 4) == 1)
+			return (NULL);
+		if (ft_write(philo2, "is eating", 4) == 1)
+			return (NULL);
+		usleep(philo2->time_to_eat * 1000);
+		pthread_mutex_unlock(&philo2->fork);
+		pthread_mutex_unlock(philo2->next_fork);
+		if (ft_write(philo2, "is sleeping", 0) == 1)
+			return (NULL);
+		usleep(philo2->time_to_sleep * 1000);
+		if (ft_write(philo2, "is thinking", 0) == 1)
 			return (NULL);
 	}
 	return (NULL);
@@ -112,8 +159,16 @@ int	make_thread(t_data *data, t_philo **philo)
 	while (n < data->nbr_philo)
 	{
 		gettimeofday(&(*philo)->last_eat, NULL);
-		if (pthread_create(&(*philo)->thread, NULL, &routine, *philo) != 0)
-			return (1);
+		if (n % 2 == 0)
+		{
+			if (pthread_create(&(*philo)->thread, NULL, &routine2, *philo) != 0)
+				return (1);
+		}
+		else
+		{
+			if (pthread_create(&(*philo)->thread, NULL, &routine1, *philo) != 0)
+				return (1);
+		}
 		*philo = (*philo)->next;
 		n++;
 	}
@@ -129,6 +184,7 @@ void	free_struct(t_philo **philo)
 	while (*philo)
 	{
 		pthread_mutex_destroy(&(*philo)->fork);
+		pthread_mutex_destroy(&(*philo)->time_mutex);
 		tmp = *philo;
 		*philo = (*philo)->next;
 		free(tmp);
@@ -199,17 +255,14 @@ int	ft_dead(t_philo	**philo)
 		gettimeofday(&time2, NULL);
 		if (((time2.tv_sec - (*philo)->last_eat.tv_sec) * 1000) + ((time2.tv_usec - (*philo)->last_eat.tv_usec) / 1000) >= (*philo)->time_to_die)
 		{
-			if (ft_write(*philo, "is dead") == 1)
+			if (ft_write(*philo, "is dead", 0) == 1)
 			{
-				pthread_mutex_unlock((*philo)->is_dead);
-				pthread_mutex_unlock((*philo)->to_write);
 				pthread_mutex_unlock(&(*philo)->time_mutex);
 				return (1);
 			}
 			pthread_mutex_lock((*philo)->is_dead);
 			(*philo)->dead[0] = 0;
 			pthread_mutex_unlock((*philo)->is_dead);
-			pthread_mutex_unlock((*philo)->to_write);
 			pthread_mutex_unlock(&(*philo)->time_mutex);
 			return (1);
 		}
@@ -220,17 +273,14 @@ int	ft_dead(t_philo	**philo)
 	pthread_mutex_lock(&(*philo)->time_mutex);
 	if (((time2.tv_sec - (*philo)->last_eat.tv_sec) * 1000) + ((time2.tv_usec - (*philo)->last_eat.tv_usec) / 1000) >= (*philo)->time_to_die)
 	{
-		if (ft_write(*philo, "is dead") == 1)
+		if (ft_write(*philo, "is dead", 0) == 1)
 		{
-			pthread_mutex_unlock((*philo)->is_dead);
-			pthread_mutex_unlock((*philo)->to_write);
 			pthread_mutex_unlock(&(*philo)->time_mutex);
 			return (1);
 		}
 		pthread_mutex_lock((*philo)->is_dead);
 		(*philo)->dead[0] = 0;
 		pthread_mutex_unlock((*philo)->is_dead);
-		pthread_mutex_unlock((*philo)->to_write);
 		pthread_mutex_unlock(&(*philo)->time_mutex);
 		return (1);
 	}
@@ -256,30 +306,37 @@ int main(int argc, char **argv)
 	pthread_mutex_init(&data.to_write, NULL);
 	if (create_struct(&data, &philo) == 1)
 		ft_printf("Error malloc\n");
+/*	back_first(&philo);
+	while (philo->next){
+		printf("philo %d : adresse de fork = %p\n", philo->philo, &philo->fork);
+		philo = philo->next;
+	}
+	printf("philo %d : adresse de fork = %p\n", philo->philo, &philo->fork);*/
+	back_first(&philo);
 	if (make_thread(&data, &philo) == 1)
-		ft_printf("Error thread\n");
-	while (data.dead != 0)
+		ft_printf("Error threads\n");
+//	while (data.dead != 0)
+	while (1)
 	{
+		pthread_mutex_lock(&data.is_dead);
+		if (data.dead == 0)
+		{
+			pthread_mutex_unlock(&data.is_dead);
+			break ;
+		}
+		pthread_mutex_unlock(&data.is_dead);
 		back_first(&philo);
 		ft_dead(&philo);
 	}
 	back_first(&philo);
 	while (philo->next)
 	{
-//		ft_printf("ICI : philo->philo = %d !\n", philo->philo);
-		pthread_mutex_unlock(&philo->fork);
-		philo = philo->next;
-	}
-	pthread_mutex_unlock(&philo->fork);
-	back_first(&philo);
-	while (philo->next)
-	{
 		pthread_join(philo->thread, NULL);
-//		ft_printf("LA : philo->philo = %d !\n", philo->philo);
 		philo = philo->next;
 	}
 	pthread_join(philo->thread, NULL);
 	pthread_mutex_destroy(&data.to_write);
+	pthread_mutex_destroy(&data.is_dead);
 	free_struct(&philo);
 	return (0);
 }
