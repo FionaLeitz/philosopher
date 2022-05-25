@@ -1,12 +1,13 @@
 #include "../headers/philo.h"
 
+// norme !
 int get_arg(int argc, char **argv, t_data *data)
 {
 	int	count;
 	int	count_arg;
 
-	count_arg = 1;
-	while (count_arg < argc)
+	count_arg = 0;
+	while (++count_arg < argc)
 	{
 		count = 0;
 		while (argv[count_arg][count])
@@ -15,7 +16,6 @@ int get_arg(int argc, char **argv, t_data *data)
 				return (1);
 			count++;
 		}
-		count_arg++;
 	}
 	data->nbr_philo = ft_atoi(argv[1]);
 	data->time_to_die = ft_atol(argv[2]);
@@ -24,6 +24,7 @@ int get_arg(int argc, char **argv, t_data *data)
 	data->must_eat = -1;
 	data->dead = data->nbr_philo;
 	pthread_mutex_init(&data->is_dead, NULL);
+	pthread_mutex_init(&data->to_write, NULL);
 	if (argc == 6)
 		data->must_eat = ft_atol(argv[5]);
 	return (0);
@@ -85,6 +86,7 @@ void	*routine(void *philo)
 	return (NULL);
 }
 
+// norme !
 int	make_thread(t_data *data, t_philo **philo)
 {
 	t_philo *tmp;
@@ -96,8 +98,8 @@ int	make_thread(t_data *data, t_philo **philo)
 		gettimeofday(&(*philo)->last_eat, NULL);
 		if (pthread_create(&(*philo)->thread, NULL, &routine, *philo) != 0)
 		{
-			return (1);
 			*philo = tmp;
+			return (1);
 		}
 		*philo = (*philo)->next;
 	}

@@ -20,6 +20,7 @@ NAME	= philo
 SRCS_DIR	= srcs
 
 SRCS_NAME	= main.c	\
+			threads.c	\
 
 SRCS	= ${addprefix ${SRCS_DIR}/, ${SRCS_NAME}}
 

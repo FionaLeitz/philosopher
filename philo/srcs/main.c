@@ -50,10 +50,12 @@ int	ft_write(t_philo *philo, char *str, int i)
 	return (0);
 }
 
-void	free_struct(t_philo **philo)
+void	free_struct(t_philo **philo, t_data data)
 {
 	t_philo	*tmp;
 
+	pthread_mutex_destroy(&data.to_write);
+	pthread_mutex_destroy(&data.is_dead);
 	while (*philo)
 	{
 		pthread_mutex_destroy(&(*philo)->fork);
@@ -82,7 +84,7 @@ int	create_struct(t_data *data, t_philo **philo)
 		element = malloc(sizeof(t_philo) * 1);
 		if (element == NULL)
 		{
-			free_struct(philo);
+			free_struct(philo, *data);
 			return (1);
 		}
 		pthread_mutex_init(&element->fork, NULL);
@@ -153,6 +155,18 @@ int	ft_dead(t_philo	**philo)
 	return (0);
 }
 
+int	if_dead(t_data *data)
+{
+	pthread_mutex_lock(&data->is_dead);
+	if (data->dead == 0)
+	{
+		pthread_mutex_unlock(&data->is_dead);
+		return (1);
+	}
+	pthread_mutex_unlock(&data->is_dead);
+	return (0);
+}
+
 int main(int argc, char **argv)
 {
 	t_data	data;
@@ -160,40 +174,25 @@ int main(int argc, char **argv)
 	t_philo	*tmp;
 
 	if (!(argc == 5 || argc == 6))
-	{
-		ft_printf("Wrong number of arguments\n");
-		return (1);
-	}
+		return (ft_printf("Wrong number of arguments\n"));
 	if (get_arg(argc, argv, &data) == 1)
-	{
-		ft_printf("Wrong arguments\n");
-		return (1);
-	}
-	pthread_mutex_init(&data.to_write, NULL);
+		return (ft_printf("Wrong arguments\n"));
 	if (create_struct(&data, &philo) == 1)
-		ft_printf("Error malloc\n");
+		return (ft_printf("Error malloc\n"));
 	tmp = philo;
 	if (make_thread(&data, &philo) == 1)
-		ft_printf("Error threads\n");
-	while (1)
 	{
-		pthread_mutex_lock(&data.is_dead);
-		if (data.dead == 0)
-		{
-			pthread_mutex_unlock(&data.is_dead);
-			break ;
-		}
-		pthread_mutex_unlock(&data.is_dead);
-		ft_dead(&philo);
+		free_struct(&philo, data);
+		return (ft_printf("Error threads\n"));
 	}
+	while (if_dead(&data) == 0)
+		ft_dead(&philo);
 	while (philo)
 	{
 		pthread_join(philo->thread, NULL);
 		philo = philo->next;
 	}
 	philo = tmp;
-	pthread_mutex_destroy(&data.to_write);
-	pthread_mutex_destroy(&data.is_dead);
-	free_struct(&philo);
+	free_struct(&philo, data);
 	return (0);
 }
