@@ -21,6 +21,7 @@ SRCS_DIR	= srcs
 
 SRCS_NAME	= main.c	\
 			threads.c	\
+			struct.c	\
 
 SRCS	= ${addprefix ${SRCS_DIR}/, ${SRCS_NAME}}
 
