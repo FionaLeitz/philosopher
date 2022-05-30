@@ -1,7 +1,7 @@
 #include "../headers/philo.h"
 
 // norme !
-int get_arg(int argc, char **argv, t_data *data)
+int	get_arg(int argc, char **argv, t_data *data)
 {
 	int	count;
 	int	count_arg;
@@ -9,12 +9,11 @@ int get_arg(int argc, char **argv, t_data *data)
 	count_arg = 0;
 	while (++count_arg < argc)
 	{
-		count = 0;
-		while (argv[count_arg][count])
+		count = -1;
+		while (argv[count_arg][++count])
 		{
 			if (ft_isdigit(argv[count_arg][count]) == 0)
 				return (1);
-			count++;
 		}
 	}
 	data->nbr_philo = ft_atoi(argv[1]);
@@ -30,6 +29,29 @@ int get_arg(int argc, char **argv, t_data *data)
 	return (0);
 }
 
+// norme !
+int	routine2(t_philo *philo, pthread_mutex_t *fork1, pthread_mutex_t *fork2)
+{
+	pthread_mutex_lock(fork1);
+	if (ft_write(philo, "has taken a fork", philo->philo % 2) == 1)
+		return (1);
+	if (fork2 == NULL)
+	{
+		usleep(philo->time_to_die * 1000);
+		pthread_mutex_unlock(fork1);
+		return (1);
+	}
+	pthread_mutex_lock(fork2);
+	if (ft_write(philo, "has taken a fork", 2) == 1)
+		return (1);
+	if (ft_write(philo, "is eating", 2) == 1)
+		return (1);
+	pthread_mutex_unlock(fork2);
+	pthread_mutex_unlock(fork1);
+	return (0);
+}
+
+// norme !
 void	*routine(void *philo)
 {
 	t_philo			*philo2;
@@ -40,57 +62,24 @@ void	*routine(void *philo)
 	while (1)
 	{
 		if (philo2->philo % 2 == 0)
-		{
-			pthread_mutex_lock(philo2->next_fork);
-			if (ft_write(philo2, "has taken a fork", 3) == 1)
+			if (routine2(philo2, philo2->next_fork, &philo2->fork) == 1)
 				return (NULL);
-			if (philo2->next_fork == NULL)
-			{
-				usleep(philo2->time_to_die * 1000);
-				pthread_mutex_unlock(philo2->next_fork);
+		if (philo2->philo % 2 == 1)
+			if (routine2(philo2, &philo2->fork, philo2->next_fork) == 1)
 				return (NULL);
-			}
-			pthread_mutex_lock(&philo2->fork);
-			if (ft_write(philo2, "has taken a fork", 4) == 1)
-				return (NULL);
-			if (ft_write(philo2, "is eating", 4) == 1)
-				return (NULL);
-			pthread_mutex_unlock(&philo2->fork);
-			pthread_mutex_unlock(philo2->next_fork);
-		}
-		else
-		{
-			pthread_mutex_lock(&philo2->fork);
-			if (ft_write(philo2, "has taken a fork", 1) == 1)
-				return (NULL);
-			if (philo2->next_fork == NULL)
-			{
-				usleep(philo2->time_to_die * 1000);
-				pthread_mutex_unlock(&philo2->fork);
-				return (NULL);
-			}
-			pthread_mutex_lock(philo2->next_fork);
-			if (ft_write(philo2, "has taken a fork", 2) == 1)
-				return (NULL);
-			if (ft_write(philo2, "is eating", 4) == 1)
-				return (NULL);
-			pthread_mutex_unlock(philo2->next_fork);
-			pthread_mutex_unlock(&philo2->fork);
-		}
-		if (ft_write(philo2, "is sleeping", 0) == 1)
+		if (ft_write(philo2, "is sleeping", 3) == 1)
 			return (NULL);
 		usleep(philo2->time_to_sleep * 1000);
-		if (ft_write(philo2, "is thinking", 0) == 1)
+		if (ft_write(philo2, "is thinking", 3) == 1)
 			return (NULL);
 	}
 	return (NULL);
 }
 
 // norme !
-int	make_thread(t_data *data, t_philo **philo)
+int	make_thread(t_philo **philo)
 {
-	t_philo *tmp;
-	(void)data;
+	t_philo	*tmp;
 
 	tmp = *philo;
 	while (*philo)

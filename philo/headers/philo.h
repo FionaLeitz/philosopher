@@ -58,9 +58,9 @@ typedef	struct	s_data
 // threads.c
 int get_arg(int argc, char **argv, t_data *data);
 void	*routine(void *philo);
-int	make_thread(t_data *data, t_philo **philo);
+int	make_thread(t_philo **philo);
 // main.c
 int	ft_write(t_philo *philo, char *str, int i);
-void back_first(t_philo **philo);
+//void back_first(t_philo **philo);
 
 #endif
