@@ -81,6 +81,7 @@ static int	check_error(int argc, char **argv, t_data *data, t_philo **philo)
 	}
 	if (create_struct(data, philo) == 1)
 	{
+		free_struct(philo, data);
 		ft_printf("Error malloc\n");
 		return (1);
 	}

@@ -19,6 +19,8 @@ int	free_struct(t_philo **philo, t_data *data)
 
 	pthread_mutex_destroy(&data->to_write);
 	pthread_mutex_destroy(&data->is_dead);
+	while ((*philo)->prev)
+		(*philo) = (*philo)->prev;
 	while (*philo)
 	{
 		pthread_mutex_destroy(&(*philo)->fork);
@@ -29,9 +31,9 @@ int	free_struct(t_philo **philo, t_data *data)
 	}
 	return (1);
 }
-/*
+
 // fills struct data with informations
-static t_philo	*set_up(t_data *data, t_philo *tmp, int i)
+t_philo	*set_up(t_data *data, int i, t_philo *tmp)
 {
 	t_philo	*element;
 
@@ -55,125 +57,26 @@ static t_philo	*set_up(t_data *data, t_philo *tmp, int i)
 }
 
 // puts philos in a list
-static pthread_mutex_t	*ft_list(t_philo **philo, t_philo *lmt, t_philo **tmp)
-{
-	pthread_mutex_t	*tmp_fork;
-	pthread_mutex_t	*tmp_fork_last;
-
-	tmp_fork = &lmt->fork;
-	if ((*philo) == NULL)
-	{
-		tmp_fork_last = tmp_fork;
-		*philo = lmt;
-		*tmp = *philo;
-	}
-	else
-	{
-		(*philo)->next_fork = tmp_fork;
-		(*philo)->next = lmt;
-		*philo = (*philo)->next;
-	}
-	return (tmp_fork_last);
-}
-*/
-// creates philos
-/*int	create_struct(t_data *data, t_philo **philo)
-{
-	int				i;
-	t_philo			*element;
-	t_philo			*tmp;
-	t_philo			*tmp2;
-	pthread_mutex_t	*tmp_fork;
-	pthread_mutex_t	*tmp_fork_last;
-
-	i = 0;
-	tmp2 = NULL;
-	(*philo) = NULL;
-	tmp_fork = NULL;
-	gettimeofday(&data->time, NULL);
-	while (++i <= data->nbr_philo)
-	{
-		element = set_up(data, tmp2, i);
-		if (element == NULL)
-			return (free_struct(philo, data));
-		tmp2 = element;
-		if ((*philo) == NULL)
-		{
-			tmp_fork_last = tmp_fork;
-			*philo = element;
-			tmp = *philo;
-		}
-		else
-		{
-			(*philo)->next_fork = tmp_fork;
-			(*philo)->next = element;
-			*philo = (*philo)->next;
-		}
-//		tmp_fork = ft_list(philo, element, &tmp);
-
-	}
-	(*philo)->next_fork = tmp_fork_last;
-	if (data->nbr_philo == 1)
-		(*philo)->next_fork = NULL;
-	*philo = tmp;
-	return (0);
-}*/
-
-pthread_mutex_t	*set_up(t_data *data, t_philo *element, int i, t_philo *tmp)
-{
-	pthread_mutex_init(&element->fork, NULL);
-	pthread_mutex_init(&element->time_mutex, NULL);
-	element->philo = i;
-	element->time_to_die = data->time_to_die;
-	element->time_to_eat = data->time_to_eat;
-	element->time_to_sleep = data->time_to_sleep;
-	element->must_eat = data->must_eat;
-	element->prev = tmp;
-	element->next = NULL;
-	element->is_dead = &data->is_dead;
-	element->dead = &data->dead;
-	element->to_write = &data->to_write;
-	element->time = &data->time;
-	return (&element->fork);
-}
-
-
-
 int	create_struct(t_data *data, t_philo **philo)
 {
 	int				i;
-	t_philo			*element;
-	t_philo			*tmp;
 	t_philo			*tmp2;
-	pthread_mutex_t	*tmp_fork;
 	pthread_mutex_t	*tmp_fork_last;
 
-	i = 0;
-	tmp = NULL;
-	(*philo) = NULL;
+	i = 1;
 	gettimeofday(&data->time, NULL);
+	(*philo) = set_up(data, 1, NULL);
+	if (*philo == NULL)
+		return (1);
+	tmp2 = *philo;
+	tmp_fork_last = &(*philo)->fork;
 	while (++i <= data->nbr_philo)
 	{
-		element = malloc(sizeof(t_philo) * 1);
-		if (element == NULL)
-		{
-			free_struct(philo, data);
+		(*philo)->next = set_up(data, i, *philo);
+		if ((*philo)->next == NULL)
 			return (1);
-		}
-		tmp_fork = set_up(data, element, i, tmp);
-		tmp = element;
-		if ((*philo) == NULL)
-		{
-			tmp_fork_last = tmp_fork;
-			*philo = element;
-			tmp2 = *philo;
-		}
-		else
-		{
-			(*philo)->next_fork = tmp_fork;
-			(*philo)->next = element;
-			*philo = (*philo)->next;
-		}
+		(*philo)->next_fork = &(*philo)->next->fork;
+		*philo = (*philo)->next;
 	}
 	(*philo)->next_fork = tmp_fork_last;
 	if (data->nbr_philo == 1)
