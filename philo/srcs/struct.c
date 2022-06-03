@@ -6,7 +6,7 @@
 /*   By: fleitz <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/30 15:24:23 by fleitz            #+#    #+#             */
-/*   Updated: 2022/05/30 15:24:26 by fleitz           ###   ########.fr       */
+/*   Updated: 2022/05/31 10:58:34 by fleitz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ int	free_struct(t_philo **philo, t_data *data)
 
 	pthread_mutex_destroy(&data->to_write);
 	pthread_mutex_destroy(&data->is_dead);
+	if (*philo == NULL)
+		return (1);
 	while ((*philo)->prev)
 		(*philo) = (*philo)->prev;
 	while (*philo)

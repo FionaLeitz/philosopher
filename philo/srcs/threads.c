@@ -89,15 +89,11 @@ static void	*routine(void *philo)
 	while (1)
 	{
 		if (philo2->philo % 2 == 0)
-		{
 			if (routine2(philo2, philo2->next_fork, &(philo2->fork)) == 1)
 				return (NULL);
-		}
 		if (philo2->philo % 2 == 1)
-		{
 			if (routine2(philo2, &(philo2->fork), philo2->next_fork) == 1)
 				return (NULL);
-		}
 		if (ft_write(philo2, "is sleeping", 3) == 1)
 			return (NULL);
 		usleep(philo2->time_to_sleep * 1000);
