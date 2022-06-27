@@ -73,8 +73,9 @@ static int	routine2(t_philo *philo, pthread_mutex_t *f1, pthread_mutex_t *f2)
 		return (1);
 	if (ft_write(philo, "is eating", 2) == 1)
 		return (1);
-	pthread_mutex_unlock(f2);
 	pthread_mutex_unlock(f1);
+	usleep(100);
+	pthread_mutex_unlock(f2);
 	return (0);
 }
 
